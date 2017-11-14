@@ -3,8 +3,8 @@
 
 // TODO: 砲台の位置を画面左に、ターゲットの位置を画面右に移動させる。(A) //完了
 // TODO: 雲の位置を左から右に動かす。見えなくなったら左端に戻す。(B) //完了
-// TODO: 砲台を青い壁に沿って上下に動かす。(C)
-// TODO: 弾のスピードを速くし、弾が画面右端を通り越したら再度発射可能にする。(D) //完了
+// TODO: 砲台を青い壁に沿って上下に動かす。(C) //完了@寺田
+// TODO: 弾のスピードを速くし、弾が画面右端を通り越したら再度発射可能にする。(D)
 // TODO: スコアのサイズを大きくする。(E) //完了
 // TODO: スコアを100点ずつ加算するようにし、5桁の表示に変える。(F) //完了
 // TODO: PlayBGM()関数を使って、BGMを再生する。(G)
@@ -16,16 +16,18 @@ Vector2 cannonPos;      //!< 砲台の位置
 Vector2 bulletPos;      //!< 弾の位置
 Rect    targetRect;     //!< ターゲットの矩形
 int     score;          //!< スコア
+bool    botom;
 
 
 // ゲーム開始時に呼ばれる関数です。
 void Start()
 {
     cloudPos = Vector2(-320, 100);
-    cannonPos = Vector2(-300, -149);
+    cannonPos = Vector2(-300, -150);
     targetRect = Rect(260, -140, 40, 40);
     bulletPos.x = -999;
     score = 0;
+    botom = true;
 }
 
 // 1/60秒ごとに呼ばれる関数です。モデルの更新と画面の描画を行います。
@@ -38,7 +40,7 @@ void Update()
 
     // 弾の移動
     if (bulletPos.x > -999) {
-        bulletPos.x += 150  * Time::deltaTime;
+        bulletPos.x += 10 * Time::deltaTime;
 
         // ターゲットと弾の当たり判定
         Rect bulletRect(bulletPos, Vector2(32, 20));
@@ -54,8 +56,8 @@ void Update()
 
     // 雲の描画
     DrawImage("cloud1.png", cloudPos);
-    cloudPos.x += 0.2;
-    if (cloudPos.x >= 500) {
+    cloudPos.x += 3;
+    if (cloudPos.x >= 540) {
         cloudPos.x = -530;
     }
 
@@ -63,13 +65,22 @@ void Update()
     if (bulletPos.x > -999) {
         DrawImage("bullet.png", bulletPos);
     }
-    if (bulletPos.x > 320) {
-        bulletPos.x = -999;
-    }
 
     // 砲台の描画
     FillRect(Rect(cannonPos.x-10, -140, 20, 100), Color::blue);
     DrawImage("cannon.png", cannonPos);
+    if (botom == true) {
+        cannonPos.y += 1;
+        if (cannonPos.y > -70) {
+            botom = false;
+        }
+    }
+    if (botom == false) {
+        cannonPos.y -= 1;
+        if (cannonPos.y < -145) {
+            botom = true;
+        }
+    }
 
     // ターゲットの描画
     FillRect(targetRect, Color::red);
