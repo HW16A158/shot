@@ -1,6 +1,5 @@
 #include "Game.hpp"
 
-
 // TODO: 砲台の位置を画面左に、ターゲットの位置を画面右に移動させる。(A) //完了
 // TODO: 雲の位置を左から右に動かす。見えなくなったら左端に戻す。(B) //完了
 // TODO: 砲台を青い壁に沿って上下に動かす。(C) //完了@寺田
@@ -28,6 +27,7 @@ void Start()
     bulletPos.x = -999;
     score = 0;
     botom = true;
+    PlaySound("bgm_maoudamashii_8bit07.mp3");
 }
 
 // 1/60秒ごとに呼ばれる関数です。モデルの更新と画面の描画を行います。
@@ -35,18 +35,23 @@ void Update()
 {
     // 弾の発射
     if (bulletPos.x <= -999 && Input::GetKeyDown(KeyMask::Space)) {
+        PlaySound("se_maoudamashii_system20.mp3");
         bulletPos = cannonPos + Vector2(50, 10);
     }
 
     // 弾の移動
     if (bulletPos.x > -999) {
-        bulletPos.x += 10 * Time::deltaTime;
+        bulletPos.x += 1000 * Time::deltaTime;
 
         // ターゲットと弾の当たり判定
         Rect bulletRect(bulletPos, Vector2(32, 20));
         if (targetRect.Overlaps(bulletRect)) {
             score += 100;         // スコアの加算
+            PlaySound("se_maoudamashii_explosion06.mp3");
             bulletPos.x = -999; // 弾を発射可能な状態に戻す
+        }
+        if (bulletPos.x > 320) {
+            bulletPos.x = -999;
         }
     }
 
