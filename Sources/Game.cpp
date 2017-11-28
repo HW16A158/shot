@@ -1,35 +1,33 @@
 #include "Game.hpp"
 
-
-// TODO: 砲台の位置を画面左に、ターゲットの位置を画面右に移動させる。(A) //完了
-// TODO: 雲の位置を左から右に動かす。見えなくなったら左端に戻す。(B) //完了
+// TODO: 砲台の位置を画面左に、ターゲットの位置を画面右に移動させる。(A) //完了@寺田
+// TODO: 雲の位置を左から右に動かす。見えなくなったら左端に戻す。(B) //完了@寺田
 // TODO: 砲台を青い壁に沿って上下に動かす。(C) //完了@寺田
-// TODO: 弾のスピードを速くし、弾が画面右端を通り越したら再度発射可能にする。(D)
-// TODO: スコアのサイズを大きくする。(E) //完了
-// TODO: スコアを100点ずつ加算するようにし、5桁の表示に変える。(F) //完了
-// TODO: PlayBGM()関数を使って、BGMを再生する。(G)
-// TODO: PlaySE()関数を使って、弾の発射時とターゲットに当たった時にSEを再生する。(H)
+// TODO: 弾のスピードを速くし、弾が画面右端を通り越したら再度発射可能にする。(D) //完了@寺田
+// TODO: スコアのサイズを大きくする。(E) //完了@浜崎
+// TODO: スコアを100点ずつ加算するようにし、5桁の表示に変える。(F) //完了＠浜崎
+// TODO: PlayBGM()関数を使って、BGMを再生する。(G) //完了@細川
+// TODO: PlaySE()関数を使って、弾の発射時とターゲットに当たった時にSEを再生する。(H) //完了@細川
 
 
 Vector2 cloudPos;       //!< 雲の位置
 Vector2 cannonPos;      //!< 砲台の位置
 Vector2 bulletPos;      //!< 弾の位置
-Vector2 enemyPos;     //!< ターゲットの矩形
+Rect    targetRect;     //!< ターゲットの矩形
 int     score;          //!< スコア
 bool    botom;
-bool    enemy;
 
 
 // ゲーム開始時に呼ばれる関数です。
 void Start()
 {
     cloudPos = Vector2(-320, 100);
-    cannonPos = Vector2(0, -150);
-    enemyPos = Vector2(260, -140);
+    cannonPos = Vector2(-300, -150);
+    targetRect = Rect(260, -140, 40, 40);
     bulletPos.x = -999;
     score = 0;
     botom = true;
-    enemy = true;
+    PlaySound("bgm_maoudamashii_8bit07.mp3");
 }
 
 // 1/60秒ごとに呼ばれる関数です。モデルの更新と画面の描画を行います。
@@ -37,21 +35,23 @@ void Update()
 {
     // 弾の発射
     if (bulletPos.x <= -999 && Input::GetKeyDown(KeyMask::Space)) {
+        PlaySound("se_maoudamashii_system20.mp3");
         bulletPos = cannonPos + Vector2(50, 10);
     }
 
     // 弾の移動
     if (bulletPos.x > -999) {
-        bulletPos.x += 150 * Time::deltaTime;
+        bulletPos.x += 1000 * Time::deltaTime;
 
         // ターゲットと弾の当たり判定
-        Rect bulletRect(bulletPos, Vector2(30, 18));
-        if (.Overlaps(bulletRect)) {
+        Rect bulletRect(bulletPos, Vector2(32, 20));
+        if (targetRect.Overlaps(bulletRect)) {
             score += 100;         // スコアの加算
+            PlaySound("se_maoudamashii_explosion06.mp3");
             bulletPos.x = -999; // 弾を発射可能な状態に戻す
         }
         if (bulletPos.x > 320) {
-            bulletPos.x = -999; // 弾を発射可能な状態に戻す
+            bulletPos.x = -999;
         }
     }
 
@@ -72,13 +72,11 @@ void Update()
     }
 
     // 砲台の描画
+    FillRect(Rect(cannonPos.x-10, -140, 20, 100), Color::blue);
     DrawImage("cannon.png", cannonPos);
     if (botom == true) {
         cannonPos.y += 1;
         if (cannonPos.y > -70) {
-            botom = false;
-        }
-        if (cannonPos.y != -70 && Input::GetKeyDown(KeyMask::DownArrow)) {
             botom = false;
         }
     }
@@ -87,25 +85,10 @@ void Update()
         if (cannonPos.y < -145) {
             botom = true;
         }
-        if (cannonPos.y != -145 && Input::GetKeyDown(KeyMask::UpArrow)) {
-            botom = true;
-        }
     }
 
     // ターゲットの描画
-    DrawImage("cannon.png", enemyPos);
-    if (enemy == true) {
-        enemyPos.x += 5;
-        if (enemyPos.x > 300) {
-            enemy = false;
-        }
-    }
-    if (enemy == false) {
-        enemyPos.x -= 5;
-        if (enemyPos.x < -300) {
-            enemy = true;
-        }
-    }
+    FillRect(targetRect, Color::red);
 
     // スコアの描画
     SetFont("nicoca_v1.ttf", 50.0f);
